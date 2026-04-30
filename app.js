@@ -275,7 +275,7 @@ function openEvForm(id) {
       </div>
       <select id="ef-resp" class="field">
         <option value="">Sin responsable</option>
-        ${['Persona 1','Persona 2','Persona 3'].map(p=>`<option ${d.responsible===p?'selected':''}>${p}</option>`).join('')}
+        ${['Jose','Juli Rabitti','Juli Bragio'].map(p=>`<option ${d.responsible===p?'selected':''}>${p}</option>`).join('')}
       </select>
       <select id="ef-status" class="field">
         ${['confirmado','tentativo','cancelado'].map(s=>`<option value="${s}" ${d.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
@@ -502,7 +502,7 @@ function openTxForm() {
       <input id="tx-cat" class="field" type="text" placeholder="Categoría (ej: Artistas, Bar, Técnica)">
       <select id="tx-resp" class="field">
         <option value="">Sin responsable</option>
-        ${['Persona 1','Persona 2','Persona 3'].map(p=>`<option>${p}</option>`).join('')}
+        ${['Jose','Juli Rabitti','Juli Bragio'].map(p=>`<option>${p}</option>`).join('')}
       </select>
       <textarea id="tx-notes" class="field" rows="2" placeholder="Notas (opcional)"></textarea>
       <button class="tap" onclick="saveTx()"
@@ -738,7 +738,7 @@ function openPedidoForm() {
       </div>
       <select id="po-resp" class="field">
         <option value="">Sin responsable</option>
-        ${['Persona 1','Persona 2','Persona 3'].map(p=>`<option>${p}</option>`).join('')}
+        ${['Jose','Juli Rabitti','Juli Bragio'].map(p=>`<option>${p}</option>`).join('')}
       </select>
       <textarea id="po-notes" class="field" rows="2" placeholder="Notas (opcional)"></textarea>
       <button class="tap" onclick="savePedido()"
@@ -918,6 +918,91 @@ function saveContact() {
 
 
 // ═══════════════════════════════════════════════════════
+//  EVENTOS SEMILLA (WhatsApp — temporada 2026)
+// ═══════════════════════════════════════════════════════
+const SEED_EVENTS = [
+  // ENERO
+  {d:'2026-01-02',t:'Reservado'},{d:'2026-01-03',t:'Reservado'},
+  {d:'2026-01-07',t:'Reservado'},{d:'2026-01-09',t:'Reservado'},
+  {d:'2026-01-10',t:'Reservado'},{d:'2026-01-11',t:'Reservado'},
+  {d:'2026-01-14',t:'Reservado'},{d:'2026-01-15',t:'Reservado'},
+  {d:'2026-01-16',t:'Reservado'},{d:'2026-01-17',t:'Entusiasta'},
+  {d:'2026-01-21',t:'La Ñata'},{d:'2026-01-23',t:'Reservado'},
+  {d:'2026-01-24',t:'Logan'},{d:'2026-01-25',t:'Reservado'},
+  {d:'2026-01-28',t:'Reservado'},{d:'2026-01-29',t:'Reservado'},
+  {d:'2026-01-30',t:'Manu María'},{d:'2026-01-31',t:'Cumple Oli'},
+  // FEBRERO
+  {d:'2026-02-04',t:'Reservado'},{d:'2026-02-05',t:'Reservado'},
+  {d:'2026-02-06',t:'Nico'},{d:'2026-02-07',t:'Apolónica'},
+  {d:'2026-02-11',t:'Milonga'},{d:'2026-02-12',t:'Reservado'},
+  {d:'2026-02-13',t:'Reservado'},{d:'2026-02-14',t:'Finde Carnaval'},
+  {d:'2026-02-18',t:'Garúa'},{d:'2026-02-19',t:'Abuelos y Abuelas'},
+  {d:'2026-02-20',t:'Reservado'},{d:'2026-02-21',t:'Eutanasia'},
+  {d:'2026-02-22',t:'Reservado'},{d:'2026-02-25',t:'Milonga'},
+  {d:'2026-02-26',t:'Mondo'},{d:'2026-02-27',t:'Peña'},
+  {d:'2026-02-28',t:'Cumple Jose'},
+  // MARZO
+  {d:'2026-03-06',t:'Reservado'},{d:'2026-03-07',t:'PeCuiz'},
+  {d:'2026-03-08',t:'Día de la Mujer'},
+  {d:'2026-03-11',t:'Visita Ingresantes Arte'},{d:'2026-03-11',t:'Milonga'},
+  {d:'2026-03-13',t:'Lucía'},{d:'2026-03-14',t:'Lucía'},
+  {d:'2026-03-18',t:'Reservado'},{d:'2026-03-20',t:'Juan Olano'},
+  {d:'2026-03-21',t:'Próspero'},{d:'2026-03-22',t:'Pañuelos — Casa Violeta'},
+  {d:'2026-03-24',t:'Día de la Memoria'},{d:'2026-03-25',t:'Milonga'},
+  {d:'2026-03-27',t:'El Síndrome'},{d:'2026-03-28',t:'Faca + Banda de Tres Arroyos'},
+  {d:'2026-03-29',t:'Presentación Libro Javi'},
+  // ABRIL
+  {d:'2026-04-02',t:'Semana Santa'},{d:'2026-04-03',t:'Semana Santa'},
+  {d:'2026-04-04',t:'Semana Santa'},{d:'2026-04-07',t:'Milonga'},
+  {d:'2026-04-10',t:'Varieté — Osqui'},{d:'2026-04-11',t:'Hardcore — Valentina'},
+  {d:'2026-04-12',t:'Negro Aguirre'},{d:'2026-04-17',t:'Lara'},
+  {d:'2026-04-18',t:'Varieté — Memo'},{d:'2026-04-22',t:'Milonga'},
+  {d:'2026-04-24',t:'Lauta Sotto'},{d:'2026-04-25',t:'Mato'},
+  // MAYO
+  {d:'2026-05-01',t:'Palo Santo'},{d:'2026-05-02',t:'Reservado'},
+  {d:'2026-05-03',t:'La Ñata'},{d:'2026-05-06',t:'Milonga'},
+  {d:'2026-05-08',t:'Luciana Jury'},{d:'2026-05-09',t:'Contrastes'},
+  {d:'2026-05-10',t:'Posible Proyección',s:'tentativo'},
+  {d:'2026-05-15',t:'César González'},{d:'2026-05-16',t:'V4 — Luciano'},
+  {d:'2026-05-17',t:'Reservado'},{d:'2026-05-20',t:'Milonga'},
+  {d:'2026-05-22',t:'Las Carelli'},{d:'2026-05-23',t:'Sofía Viola'},
+  {d:'2026-05-24',t:'Marcos Abe + Ligas Menores'},
+  {d:'2026-05-25',t:'Peña Lu — Mediodía'},
+  {d:'2026-05-29',t:'Lucía'},{d:'2026-05-30',t:'Lucía'},{d:'2026-05-31',t:'Lucía'},
+  // JUNIO
+  {d:'2026-06-03',t:'Milonga'},{d:'2026-06-05',t:'El Viento de los Locos / Coie'},
+  {d:'2026-06-06',t:'Zaino + Benito Malacalza'},{d:'2026-06-12',t:'Caverna'},
+  {d:'2026-06-13',t:'Fruta'},{d:'2026-06-17',t:'Milonga'},
+  {d:'2026-06-19',t:'Obra — Paulina'},{d:'2026-06-20',t:'Clara Bertolini'},
+  {d:'2026-06-21',t:'Obra — Paulina'},{d:'2026-06-26',t:'Contrastes'},
+  {d:'2026-06-27',t:'Pimienta Negra'},
+  // JULIO
+  {d:'2026-07-01',t:'Milonga'},{d:'2026-07-03',t:'Leandro Dadassio'},
+  {d:'2026-07-04',t:'Abi González'},{d:'2026-07-09',t:'Peña — Mediodía'},
+  {d:'2026-07-10',t:'NAda'},{d:'2026-07-11',t:'Hidromedusa'},
+  {d:'2026-07-15',t:'Milonga'},{d:'2026-07-17',t:'Libre',s:'tentativo'},
+  {d:'2026-07-18',t:'Bombonclat'},
+  {d:'2026-07-24',t:'¿Cerramos?',s:'tentativo'},{d:'2026-07-25',t:'¿Cerramos?',s:'tentativo'},
+  {d:'2026-07-27',t:'San Perico'},{d:'2026-07-28',t:'San Perico'},
+  {d:'2026-07-29',t:'San Perico + Milonga'},{d:'2026-07-31',t:'Reservado'},
+  // AGOSTO
+  {d:'2026-08-01',t:'Reservado'},{d:'2026-08-07',t:'Reservado'},
+  {d:'2026-08-08',t:'Reservado'},{d:'2026-08-14',t:'Reservado'},
+  {d:'2026-08-15',t:'Reservado'},{d:'2026-08-21',t:'Reservado'},
+  {d:'2026-08-22',t:'Reservado'},{d:'2026-08-28',t:'Reservado'},
+  {d:'2026-08-29',t:'Reservado'},
+  // SEPTIEMBRE
+  {d:'2026-09-04',t:'Reservado'},{d:'2026-09-05',t:'Reservado'},
+  {d:'2026-09-11',t:'Reservado'},{d:'2026-09-12',t:'Polonica'},
+  {d:'2026-09-18',t:'Reservado'},{d:'2026-09-19',t:'Reservado'},
+  {d:'2026-09-25',t:'Reservado'},{d:'2026-09-26',t:'Reservado'},
+].map((e,i) => ({
+  id: 'seed_'+i, title: e.t, date: e.d,
+  status: e.s||'confirmado', time:'', responsible:'', notes:''
+}));
+
+
+// ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -956,6 +1041,11 @@ document.addEventListener('DOMContentLoaded', () => {
         state = fixArrays({ ...defaultState(), ...data });
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
         if (_appReady) renderCurrentView();
+      } else {
+        // Firebase vacío → sembrar eventos y sincronizar
+        state.events = SEED_EVENTS;
+        save();
+        renderCurrentView();
       }
     });
 
@@ -963,5 +1053,12 @@ document.addEventListener('DOMContentLoaded', () => {
     _db.ref('.info/connected').on('value', snap => {
       if (snap.val() === false) showSync('error');
     });
+  } else {
+    // Sin Firebase → sembrar localmente si no hay datos
+    if (state.events.length === 0) {
+      state.events = SEED_EVENTS;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+      renderCurrentView();
+    }
   }
 });
