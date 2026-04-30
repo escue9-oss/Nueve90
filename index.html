@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- PWA: Android -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- PWA: iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nueve90">
+  <link rel="apple-touch-icon" href="logo.png.jpg">
+  <link rel="apple-touch-icon" sizes="152x152" href="logo.png.jpg">
+  <link rel="apple-touch-icon" sizes="180x180" href="logo.png.jpg">
+  <link rel="apple-touch-icon" sizes="167x167" href="logo.png.jpg">
+
+  <!-- Splash screens iOS (fondo negro con logo centrado) -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <title>Nueve90</title>
+
+  <!-- Brand font: Barlow Condensed -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    /* ══ Paleta de marca ══════════════════════════════════ */
+    :root {
+      --red:     #c94120;   /* rojo-naranja logo  */
+      --orange:  #f07820;   /* naranja logo       */
+      --teal:    #3aacac;   /* teal claro (vis.)  */
+      --mint:    #00c090;   /* verde-teal logo    */
+      --dark:    #111111;
+      --surface: #1a1a1a;
+      --card:    #222222;
+      --border:  #2e2e2e;
+      --text2:   #777777;
+      --safe-bottom: env(safe-area-inset-bottom, 12px);
+    }
+
+    /* ══ Reset ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; }
+    body {
+      background: var(--dark);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══ Tipografía de marca ══════════════════════════════ */
+    .brand    { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; }
+    .brand-it { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-style: italic; }
+
+    /* ══ Franja de marca (4 colores del logo) ════════════ */
+    #brand-stripe {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 4px; display: flex; z-index: 200;
+    }
+    #brand-stripe div { flex: 1; }
+
+    /* ══ Vistas ══════════════════════════════════════════ */
+    .view { display: none; flex-direction: column; height: 100%; }
+    .view.active { display: flex; }
+
+    /* ══ Área scrollable ════════════════════════════════ */
+    .scroll-area {
+      flex: 1; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(88px + var(--safe-bottom));
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* ══ Tap feedback ═══════════════════════════════════ */
+    .tap { transition: opacity .1s, transform .1s; cursor: pointer; }
+    .tap:active { opacity: .5; transform: scale(.95); }
+
+    /* ══ Modal bottom sheet ══════════════════════════════ */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.75); z-index: 60; align-items: flex-end;
+    }
+    .modal-bg.open { display: flex; }
+    .modal-sheet {
+      width: 100%; max-height: 92vh;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      overflow-y: auto;
+      animation: slideUp .26s cubic-bezier(.32,1,.23,1);
+    }
+    .modal-sheet::-webkit-scrollbar { display: none; }
+    .modal-stripe { display: flex; height: 4px; border-radius: 20px 20px 0 0; overflow: hidden; }
+    .modal-stripe div { flex: 1; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    /* ══ Inputs ═══════════════════════════════════════════ */
+    .field {
+      background: var(--card); color: #fff;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 13px 16px; width: 100%; font-size: 16px;
+      outline: none; font-family: inherit; transition: border-color .15s;
+    }
+    .field:focus  { border-color: var(--orange); }
+    .field::placeholder { color: #444; }
+    select.field option { background: var(--surface); }
+
+    /* ══ Encabezado de vista ══════════════════════════════ */
+    .view-hdr {
+      background: var(--surface);
+      padding: 54px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; margin: 0 0 2px;
+    }
+    .view-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900; font-style: italic;
+      font-size: 38px; letter-spacing: -1px;
+      text-transform: uppercase; margin: 0;
+      line-height: 1;
+    }
+
+    /* ══ Bottom Nav ═══════════════════════════════════════ */
+    #bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(14,14,14,.97);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding-bottom: var(--safe-bottom); z-index: 50;
+    }
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      padding: 10px 0 5px; flex: 1;
+      color: #3a3a3a;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: color .15s; position: relative;
+    }
+    .nav-item::after {
+      content: ''; position: absolute;
+      top: 0; left: 25%; right: 25%; height: 2px;
+      background: transparent; border-radius: 0 0 2px 2px;
+      transition: background .15s;
+    }
+    .nav-item.active::after { background: currentColor; }
+    .nav-item:active svg { transform: scale(.85); }
+
+    /* ══ FAB ══════════════════════════════════════════════ */
+    .fab {
+      position: fixed; right: 20px;
+      bottom: calc(76px + var(--safe-bottom) + 14px);
+      width: 54px; height: 54px; border-radius: 50%;
+      border: none; font-size: 28px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 40; transition: transform .1s, opacity .1s;
+    }
+    .fab:active { transform: scale(.88); opacity: .8; }
+
+    /* ══ Celda del calendario ═════════════════════════════ */
+    .cal-cell {
+      display: flex; flex-direction: column;
+      align-items: flex-start;
+      width: 100%; min-height: 58px;
+      padding: 4px 3px 3px; border-radius: 6px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      position: relative; transition: background .1s;
+      color: #ffffff; overflow: hidden;
+    }
+    .cal-cell:active { background: #2a2a2a; }
+    .cal-cell.today {
+      background: var(--orange); color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+    }
+    .cal-cell.selected:not(.today) {
+      outline: 2px solid var(--orange); outline-offset: -2px;
+    }
+    .cal-cell.other-month { color: #2a2a2a; font-weight: 400; }
+    .cal-day-num {
+      font-size: 13px; font-weight: 700; line-height: 1;
+      display: block; margin-bottom: 2px; flex-shrink: 0;
+    }
+    .cal-cell.today .cal-day-num { font-size: 14px; }
+    .ev-chip {
+      font-size: 8px; font-weight: 800; border-radius: 3px;
+      padding: 2px 3px; margin-top: 1px; width: 100%;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+      display: block; line-height: 1.3; cursor: pointer;
+    }
+    .ev-chip:active { opacity: .65; }
+    .cal-cell.today .ev-chip { background: rgba(0,0,0,.2) !important; color: #fff !important; }
+
+    /* ══ Badges ═══════════════════════════════════════════ */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: .8px; text-transform: uppercase;
+    }
+
+    /* ══ Toast ════════════════════════════════════════════ */
+    #toast {
+      display: none; position: fixed;
+      bottom: calc(76px + var(--safe-bottom) + 18px);
+      left: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px 20px;
+      font-size: 13px; font-weight: 700; letter-spacing: .3px;
+      z-index: 100; white-space: nowrap; pointer-events: none;
+    }
+
+    /* ══ Section label ════════════════════════════════════ */
+    .sec-label {
+      font-size: 10px; font-weight: 700; color: #3a3a3a;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 12px 0 6px;
+    }
+
+    /* ══ Segmented control ════════════════════════════════ */
+    .seg { display: flex; background: var(--card); border-radius: 10px; padding: 3px; gap: 3px; }
+    .seg-btn {
+      flex: 1; border: none; border-radius: 8px; padding: 9px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background .15s, color .15s; font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Franja de 4 colores (firma visual del logo) -->
+<div id="brand-stripe">
+  <div style="background:#c94120;"></div>
+  <div style="background:#f07820;"></div>
+  <div style="background:#1e6868;"></div>
+  <div style="background:#00c090;"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     GRILLA
+══════════════════════════════════════════════════════ -->
+<div id="view-grilla" class="view active">
+
+  <div class="view-hdr">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="logo.png.jpg" alt="nueve90" style="width:46px; height:46px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+        <h1 class="view-title">Grilla</h1>
+      </div>
+      <button id="btn-export" class="tap"
+        style="background:#f07820; border:none; border-radius:8px; padding:9px 16px; color:#fff; font-size:12px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; font-family:inherit;">
+        ↑ Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Navegación de mes -->
+  <div style="background:var(--surface); padding:10px 20px 12px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); flex-shrink:0;">
+    <button id="btn-prev-month" class="tap"
+      style="background:var(--card); border:none; border-radius:8px; width:38px; height:36px; color:#fff; font-size:20px; display:flex; align-items:center; justify-content:center;">‹</button>
+    <span id="grilla-month-label" class="brand" style="font-size:20px; letter-spacing:-.5px; text-transform:uppercase;"></span>
+    <button id="btn-next-month" class="tap"
+      style="background:var(--card); border:none; border-radius:8px; width:38px; height:36px; color:#fff; font-size:20px; display:flex; align-items:center; justify-content:center;">›</button>
+  </div>
+
+  <!-- Área exportable -->
+  <div id="export-canvas" style="background:var(--surface); padding:10px 14px 10px; flex-shrink:0;">
+    <div style="display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px;">
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">LUN</div>
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">MAR</div>
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">MIÉ</div>
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">JUE</div>
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">VIE</div>
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">SÁB</div>
+      <div style="text-align:center; font-size:9px; font-weight:800; color:#3a3a3a; padding:3px 0; letter-spacing:1px;">DOM</div>
+    </div>
+    <div id="grilla-days" style="display:grid; grid-template-columns:repeat(7,1fr); row-gap:2px;"></div>
+  </div>
+
+  <!-- Eventos del día seleccionado -->
+  <div class="scroll-area" style="background:var(--dark); padding-left:16px; padding-right:16px;">
+    <div id="grilla-day-label" class="sec-label"></div>
+    <div id="grilla-events-list"></div>
+  </div>
+
+  <button id="btn-add-event" class="fab tap"
+    style="background:#f07820; color:#fff; box-shadow:0 6px 28px rgba(240,120,32,.5);">+</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     CAJA
+══════════════════════════════════════════════════════ -->
+<div id="view-caja" class="view">
+
+  <div class="view-hdr">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="logo.png.jpg" alt="nueve90" style="width:46px; height:46px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+        <h1 class="view-title">Caja</h1>
+      </div>
+      <select id="caja-month-sel" class="field" style="width:auto; font-size:13px; padding:9px 12px;"></select>
+    </div>
+  </div>
+
+  <!-- Resumen -->
+  <div style="background:var(--surface); padding:12px 16px 14px; display:flex; gap:8px; border-bottom:1px solid var(--border); flex-shrink:0;">
+    <div style="flex:1; background:#0b2b1a; border-radius:12px; padding:12px 10px; border-left:3px solid #00c090;">
+      <p style="font-size:9px; color:#00c090; margin:0 0 4px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Ingresos</p>
+      <p id="sum-ingresos" class="brand" style="font-size:20px; margin:0; color:#00c090;">$0</p>
+    </div>
+    <div style="flex:1; background:#2b0e0b; border-radius:12px; padding:12px 10px; border-left:3px solid #c94120;">
+      <p style="font-size:9px; color:#c94120; margin:0 0 4px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Egresos</p>
+      <p id="sum-egresos" class="brand" style="font-size:20px; margin:0; color:#c94120;">$0</p>
+    </div>
+    <div style="flex:1; background:var(--card); border-radius:12px; padding:12px 10px; border-left:3px solid var(--border);">
+      <p style="font-size:9px; color:var(--text2); margin:0 0 4px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Saldo</p>
+      <p id="sum-saldo" class="brand" style="font-size:20px; margin:0;">$0</p>
+    </div>
+  </div>
+
+  <div class="scroll-area" style="background:var(--dark); padding-left:16px; padding-right:16px;">
+    <div id="caja-list" style="padding-top:4px;"></div>
+  </div>
+
+  <button id="btn-add-tx" class="fab tap"
+    style="background:#00c090; color:#111; box-shadow:0 6px 28px rgba(0,192,144,.4);">+</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     BORDERAUX
+══════════════════════════════════════════════════════ -->
+<div id="view-borderaux" class="view">
+
+  <div class="view-hdr">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="logo.png.jpg" alt="nueve90" style="width:46px; height:46px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+      <h1 class="view-title">Borderaux</h1>
+    </div>
+  </div>
+
+  <div class="scroll-area" style="background:var(--dark); padding-left:16px; padding-right:16px;">
+    <div id="borderaux-list" style="padding-top:8px;"></div>
+  </div>
+
+  <button id="btn-add-bx" class="fab tap"
+    style="background:#3aacac; color:#111; box-shadow:0 6px 28px rgba(58,172,172,.4);">+</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PEDIDOS
+══════════════════════════════════════════════════════ -->
+<div id="view-pedidos" class="view">
+
+  <div class="view-hdr">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+      <img src="logo.png.jpg" alt="nueve90" style="width:46px; height:46px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+      <h1 class="view-title">Pedidos</h1>
+    </div>
+    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;" id="pedidos-filters">
+      <button onclick="setPedidosFilter('all')" data-pf="all" class="tap filter-chip"
+        style="background:#c94120; border:none; border-radius:6px; padding:6px 14px; color:#fff; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; white-space:nowrap;">Todos</button>
+      <button onclick="setPedidosFilter('pending')" data-pf="pending" class="tap filter-chip"
+        style="background:var(--card); border:none; border-radius:6px; padding:6px 14px; color:var(--text2); font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; white-space:nowrap;">Pendiente</button>
+      <button onclick="setPedidosFilter('in-progress')" data-pf="in-progress" class="tap filter-chip"
+        style="background:var(--card); border:none; border-radius:6px; padding:6px 14px; color:var(--text2); font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; white-space:nowrap;">En gestión</button>
+      <button onclick="setPedidosFilter('received')" data-pf="received" class="tap filter-chip"
+        style="background:var(--card); border:none; border-radius:6px; padding:6px 14px; color:var(--text2); font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; white-space:nowrap;">Recibido</button>
+    </div>
+  </div>
+
+  <div class="scroll-area" style="background:var(--dark); padding-left:16px; padding-right:16px;">
+    <div id="pedidos-list" style="padding-top:8px;"></div>
+  </div>
+
+  <button id="btn-add-pedido" class="fab tap"
+    style="background:#c94120; color:#fff; box-shadow:0 6px 28px rgba(201,65,32,.45);">+</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     ADMIN
+══════════════════════════════════════════════════════ -->
+<div id="view-admin" class="view">
+
+  <div class="view-hdr">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+      <img src="logo.png.jpg" alt="nueve90" style="width:46px; height:46px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+      <h1 class="view-title">Admin</h1>
+    </div>
+    <div class="seg">
+      <button id="tab-tasks" class="seg-btn tap" onclick="setAdminTab('tasks')"
+        style="background:#f07820; color:#fff;">Tareas</button>
+      <button id="tab-contacts" class="seg-btn tap" onclick="setAdminTab('contacts')"
+        style="background:transparent; color:var(--text2);">Contactos</button>
+    </div>
+  </div>
+
+  <div class="scroll-area" style="background:var(--dark); padding-left:16px; padding-right:16px;">
+    <div id="admin-tasks-pane" style="padding-top:8px;"></div>
+    <div id="admin-contacts-pane" style="display:none; padding-top:8px;"></div>
+  </div>
+
+  <button id="btn-add-admin" class="fab tap"
+    style="background:#f07820; color:#fff; box-shadow:0 6px 28px rgba(240,120,32,.45);">+</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     BOTTOM NAVIGATION
+══════════════════════════════════════════════════════ -->
+<nav id="bottom-nav">
+  <div style="display:flex;">
+
+    <button class="nav-item active" data-view="grilla">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Grilla
+    </button>
+
+    <button class="nav-item" data-view="caja">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      Caja
+    </button>
+
+    <button class="nav-item" data-view="borderaux">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Borderaux
+    </button>
+
+    <button class="nav-item" data-view="pedidos">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      Pedidos
+    </button>
+
+    <button class="nav-item" data-view="admin">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/>
+      </svg>
+      Admin
+    </button>
+
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL
+══════════════════════════════════════════════════════ -->
+<div id="modal-bg" class="modal-bg" onclick="handleModalBgClick(event)">
+  <div class="modal-sheet">
+    <!-- Franja de marca en el modal -->
+    <div class="modal-stripe">
+      <div style="background:#c94120;"></div>
+      <div style="background:#f07820;"></div>
+      <div style="background:#1e6868;"></div>
+      <div style="background:#00c090;"></div>
+    </div>
+    <div style="padding:16px 20px 0; display:flex; justify-content:space-between; align-items:center;">
+      <h2 id="modal-title" class="brand" style="font-size:24px; margin:0; letter-spacing:-.5px; text-transform:uppercase;"></h2>
+      <button onclick="closeModal()" class="tap"
+        style="background:var(--card); border:none; border-radius:50%; width:32px; height:32px; color:var(--text2); font-size:20px; display:flex; align-items:center; justify-content:center;">×</button>
+    </div>
+    <div id="modal-body" style="padding:16px 20px 40px;"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
