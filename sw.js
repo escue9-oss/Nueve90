@@ -1,7 +1,7 @@
 const CACHE = 'nueve90-v1';
 const ASSETS = [
   './index.html',
-  './js/app.js',
+  './app.js',
   './manifest.json',
   './logo.png.jpg',
 ];
