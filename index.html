@@ -489,8 +489,19 @@
 
 <div id="toast"></div>
 
+<!-- Indicador de sincronización -->
+<div id="sync-indicator" style="display:none; position:fixed; top:8px; right:12px; z-index:300; background:#1a1a1a; border:1px solid #2e2e2e; border-radius:20px; padding:5px 10px; font-size:10px; font-weight:800; letter-spacing:.8px; color:#777; align-items:center; gap:5px;">
+  <span id="sync-dot" style="width:6px;height:6px;border-radius:50%;background:#777;display:inline-block;"></span>
+  <span id="sync-text">SINCRONIZANDO</span>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="app.js"></script>
-<script>
+
+
+C:\Users\Usuario\OneDrive\Escritorio\webs\Nueve90\js\app.js
+
+  <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
