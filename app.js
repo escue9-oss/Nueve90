@@ -18,6 +18,26 @@ const NAV_COLORS = {
   borderaux: C.teal, pedidos: C.red, admin: C.orange,
 };
 
+// ── Firebase config ────────────────────────────────────────
+// ⚠️  REEMPLAZAR con los valores de tu proyecto Firebase
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAGIRQ86CJJTS9DXjN9X42MjqS3dnO-DuQ",
+  authDomain:        "nueve90-32d0c.firebaseapp.com",
+  databaseURL:       "https://nueve90-32d0c-default-rtdb.firebaseio.com",
+  projectId:         "nueve90-32d0c",
+  storageBucket:     "nueve90-32d0c.firebasestorage.app",
+  messagingSenderId: "1014283468295",
+  appId:             "1:1014283468295:web:cd782454c8bec23d8634a2"
+};
+
+let _db = null;
+let _dbRef = null;
+try {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  _db    = firebase.database();
+  _dbRef = _db.ref('nueve90');
+} catch(e) {}
+
 // ── Datos ─────────────────────────────────────────────────
 const STORAGE_KEY = 'nueve90_v1';
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -26,12 +46,52 @@ const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
 function defaultState() {
   return { events:[], transactions:[], borderaux:[], orders:[], tasks:[], contacts:[] };
 }
+
+function fixArrays(data) {
+  ['events','transactions','borderaux','orders','tasks','contacts'].forEach(k => {
+    if (!data[k]) { data[k] = []; return; }
+    if (!Array.isArray(data[k])) data[k] = Object.values(data[k]);
+  });
+  return data;
+}
+
 let state = (() => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState(); }
   catch { return defaultState(); }
 })();
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+  if (_dbRef) {
+    showSync('syncing');
+    _dbRef.set(state)
+      .then(() => showSync('ok'))
+      .catch(() => showSync('error'));
+  }
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ── Indicador de sync ──────────────────────────────────────
+let _syncTimer = null;
+function showSync(status) {
+  const el = document.getElementById('sync-indicator');
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  if (!el) return;
+  const cfg = {
+    syncing: { color:'#f07820', text:'SINCRONIZANDO' },
+    ok:      { color:'#00c090', text:'SINCRONIZADO'  },
+    error:   { color:'#c94120', text:'SIN CONEXIÓN'  },
+  }[status];
+  el.style.display = 'flex';
+  dot.style.background = cfg.color;
+  txt.textContent = cfg.text;
+  txt.style.color = cfg.color;
+  dot.style.color = cfg.color;
+  clearTimeout(_syncTimer);
+  if (status !== 'error') _syncTimer = setTimeout(() => { el.style.display = 'none'; }, 2500);
+}
 
 // ── Utilidades ────────────────────────────────────────────
 function today() {
@@ -65,6 +125,11 @@ function handleModalBgClick(e) {
 
 // ── Router ─────────────────────────────────────────────────
 let currentView = 'grilla';
+
+function renderCurrentView() {
+  ({ grilla:renderGrilla, caja:renderCaja, borderaux:renderBorderaux,
+     pedidos:renderPedidos, admin:renderAdmin })[currentView]?.();
+}
 
 function navigate(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -879,4 +944,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   navigate('grilla');
+
+  // ── Sync en tiempo real con Firebase ───────────────────
+  if (_dbRef) {
+    let _appReady = false;
+    setTimeout(() => { _appReady = true; }, 300);
+
+    _dbRef.on('value', snap => {
+      const data = snap.val();
+      if (data) {
+        state = fixArrays({ ...defaultState(), ...data });
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+        if (_appReady) renderCurrentView();
+      }
+    });
+
+    // Indicador de conexión online/offline
+    _db.ref('.info/connected').on('value', snap => {
+      if (snap.val() === false) showSync('error');
+    });
+  }
 });
