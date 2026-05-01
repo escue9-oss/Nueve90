@@ -2,7 +2,7 @@
   "name": "Nueve90 — Espacio Cultural",
   "short_name": "Nueve90",
   "description": "App de gestión interna para Nueve90 Cooperativa Cultural",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#111111",
