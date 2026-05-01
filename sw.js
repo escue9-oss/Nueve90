@@ -1,4 +1,4 @@
-const CACHE = 'nueve90-v1';
+const CACHE = 'nueve90-v2';
 const ASSETS = [
   './index.html',
   './app.js',
